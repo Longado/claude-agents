@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { readQueue, writeQueue, addTask, updateTask, findTasksByStatus } from '../../src/core/shared.js';
+import { readQueue, writeQueue, addTask, updateTask, findTasksByStatus, claimTask, completeReview } from '../../src/core/shared.js';
 import type { QueueItem } from '../../src/core/shared.js';
 
 describe('shared queue', () => {
@@ -102,6 +102,52 @@ describe('shared queue', () => {
     const building = findTasksByStatus('building', baseDir);
     expect(building).toHaveLength(1);
     expect(building[0].task).toBe('Task 1');
+  });
+
+  it('claims first queued task', () => {
+    addTask('Task A', baseDir);
+    addTask('Task B', baseDir);
+
+    const claimed = claimTask('builder', baseDir);
+    expect(claimed).not.toBeNull();
+    expect(claimed!.task).toBe('Task A');
+    expect(claimed!.status).toBe('building');
+    expect(claimed!.assignee).toBe('builder');
+
+    // Second claim gets Task B
+    const claimed2 = claimTask('builder', baseDir);
+    expect(claimed2!.task).toBe('Task B');
+  });
+
+  it('claims needs_fix tasks when no queued tasks', () => {
+    const item = addTask('Buggy code', baseDir);
+    updateTask(item.id, { status: 'needs_fix', feedback: 'Missing tests' }, baseDir);
+
+    const claimed = claimTask('builder', baseDir);
+    expect(claimed!.task).toBe('Buggy code');
+    expect(claimed!.status).toBe('building');
+  });
+
+  it('returns null when nothing to claim', () => {
+    expect(claimTask('builder', baseDir)).toBeNull();
+  });
+
+  it('completes review with approval', () => {
+    const item = addTask('Feature X', baseDir);
+    updateTask(item.id, { status: 'needs_review' }, baseDir);
+
+    const reviewed = completeReview(item.id, true, 'LGTM', baseDir);
+    expect(reviewed!.status).toBe('done');
+    expect(reviewed!.feedback).toBe('LGTM');
+  });
+
+  it('completes review with rejection', () => {
+    const item = addTask('Feature Y', baseDir);
+    updateTask(item.id, { status: 'needs_review' }, baseDir);
+
+    const reviewed = completeReview(item.id, false, 'Missing error handling', baseDir);
+    expect(reviewed!.status).toBe('needs_fix');
+    expect(reviewed!.feedback).toBe('Missing error handling');
   });
 
   it('preserves other items when updating one', () => {

@@ -77,3 +77,26 @@ export function updateTask(
 export function findTasksByStatus(status: QueueStatus, baseDir?: string): ReadonlyArray<QueueItem> {
   return readQueue(baseDir).filter((item) => item.status === status);
 }
+
+export function claimTask(agentName: string, baseDir?: string): QueueItem | null {
+  const available = findTasksByStatus('queued', baseDir);
+  if (available.length === 0) {
+    // Also check for tasks that need fixing
+    const needsFix = findTasksByStatus('needs_fix', baseDir);
+    if (needsFix.length === 0) return null;
+    return updateTask(needsFix[0].id, { status: 'building', assignee: agentName }, baseDir);
+  }
+  return updateTask(available[0].id, { status: 'building', assignee: agentName }, baseDir);
+}
+
+export function completeReview(
+  taskId: string,
+  approved: boolean,
+  feedback: string | null,
+  baseDir?: string,
+): QueueItem | null {
+  return updateTask(taskId, {
+    status: approved ? 'done' : 'needs_fix',
+    feedback,
+  }, baseDir);
+}
