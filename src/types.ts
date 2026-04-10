@@ -48,6 +48,8 @@ export type TemplateName =
   | 'personal-assistant'
   | 'code-monitor'
   | 'info-miner'
+  | 'builder'
+  | 'reviewer'
   | 'custom';
 
 export interface AgentConfig {
@@ -65,7 +67,7 @@ export interface AgentConfig {
 
 export const AgentConfigSchema = z.object({
   name: z.string().min(1).regex(/^[a-z0-9-]+$/, 'Name must be lowercase alphanumeric with dashes'),
-  template: z.enum(['personal-assistant', 'code-monitor', 'info-miner', 'custom']),
+  template: z.enum(['personal-assistant', 'code-monitor', 'info-miner', 'builder', 'reviewer', 'custom']),
   schedule: z.object({
     intervalSeconds: z.number().min(60),
     startHour: z.number().min(0).max(23),

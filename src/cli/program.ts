@@ -8,6 +8,7 @@ import { registerAttachCommand } from './attach.js';
 import { registerDestroyCommand } from './destroy.js';
 import { registerRunCommand } from './run.js';
 import { registerDigestCommand } from './digest.js';
+import { registerTeamCommand } from './team.js';
 
 export function createProgram(): Command {
   const program = new Command()
@@ -24,6 +25,7 @@ export function createProgram(): Command {
   registerDestroyCommand(program);
   registerRunCommand(program);
   registerDigestCommand(program);
+  registerTeamCommand(program);
 
   return program;
 }

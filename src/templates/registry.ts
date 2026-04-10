@@ -2,6 +2,8 @@ import type { AgentConfig, TemplateName } from '../types.js';
 import { personalAssistantDefaults } from './personal-assistant.js';
 import { codeMonitorDefaults } from './code-monitor.js';
 import { infoMinerDefaults } from './info-miner.js';
+import { builderDefaults } from './builder.js';
+import { reviewerDefaults } from './reviewer.js';
 
 type TemplateFactory = (name: string, overrides?: Partial<AgentConfig>) => AgentConfig;
 
@@ -9,6 +11,8 @@ const TEMPLATES: Record<TemplateName, TemplateFactory | null> = {
   'personal-assistant': personalAssistantDefaults,
   'code-monitor': codeMonitorDefaults,
   'info-miner': infoMinerDefaults,
+  'builder': builderDefaults,
+  'reviewer': reviewerDefaults,
   'custom': null,
 };
 
