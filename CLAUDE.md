@@ -27,6 +27,23 @@ npm test           # Run tests with vitest
 npm run typecheck  # Type check
 ```
 
+## Agent Team
+
+Builder + Reviewer agents collaborate via shared task queue:
+
+```bash
+agents team init --project /path/to/project   # Create team
+agents team add-task "Implement feature X"     # Add task
+agents team status                             # View queue + agents
+agents start builder                           # Start builder (launchd)
+agents start reviewer                          # Start reviewer (launchd)
+```
+
+Queue flow: `queued → building → needs_review → done` (or `needs_fix → building`)
+
+Templates: `src/templates/builder.ts`, `src/templates/reviewer.ts`
+Shared state: `src/core/shared.ts` (queue read/write/claim/review)
+
 ## Conventions
 
 - TypeScript, ESM, Node 18+
