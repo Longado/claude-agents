@@ -7,6 +7,13 @@ import { createInitialState, writeState } from '../core/state.js';
 import { writeHandoff } from '../core/handoff.js';
 import { addTask, readQueue } from '../core/shared.js';
 import { readState } from '../core/state.js';
+import { BUILDER_PROMPT } from '../templates/builder.js';
+import { REVIEWER_PROMPT } from '../templates/reviewer.js';
+
+const TEMPLATE_PROMPTS: Record<'builder' | 'reviewer', string> = {
+  builder: BUILDER_PROMPT,
+  reviewer: REVIEWER_PROMPT,
+};
 
 function initAgent(name: string, template: 'builder' | 'reviewer', projectPath: string): void {
   const config = createAgentConfig(template, name, {
@@ -19,13 +26,7 @@ function initAgent(name: string, template: 'builder' | 'reviewer', projectPath: 
   writeFileSync(join(agentDir, 'config.json'), JSON.stringify(config, null, 2));
   writeState(name, createInitialState(name));
   writeHandoff(name, '');
-
-  // Write the template prompt
-  const mod = template === 'builder'
-    ? require('../templates/builder.js')
-    : require('../templates/reviewer.js');
-  const promptKey = template === 'builder' ? 'BUILDER_PROMPT' : 'REVIEWER_PROMPT';
-  writeFileSync(join(agentDir, 'prompt.md'), mod[promptKey]);
+  writeFileSync(join(agentDir, 'prompt.md'), TEMPLATE_PROMPTS[template]);
 }
 
 export function registerTeamCommand(program: Command): void {
